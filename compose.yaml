@@ -1,0 +1,62 @@
+name: ${SYNC_PROJECT_NAME:-wordpress-sync}
+
+services:
+  sync:
+    image: ${SYNC_IMAGE:?Set SYNC_IMAGE to your published image}
+    pull_policy: ${SYNC_PULL_POLICY:-always}
+    container_name: ${SYNC_CONTAINER_NAME:-wordpress-sync}
+    restart: unless-stopped
+    init: true
+    user: "${SYNC_UID:-1000}:${SYNC_GID:-1000}"
+    env_file:
+      - .env
+    environment:
+      SYNC_HOST: 0.0.0.0
+      SYNC_PORT: "${SYNC_PORT:-4177}"
+      SYNC_BASE_URL: ${SYNC_BASE_URL:?Set SYNC_BASE_URL in .env}
+      SYNC_MIGRATION_ENABLED: "${SYNC_MIGRATION_ENABLED:-false}"
+      SYNC_MIGRATION_DESTINATION_URL: "${SYNC_MIGRATION_DESTINATION_URL:-}"
+      SYNC_MIGRATION_DB_HOST: "${SYNC_MIGRATION_DB_HOST:-database}"
+      SYNC_MIGRATION_DB_PORT: "${SYNC_MIGRATION_DB_PORT:-3306}"
+      SYNC_MIGRATION_DB_NAME: "${SYNC_MIGRATION_DB_NAME:-}"
+      SYNC_MIGRATION_DB_USER: "${SYNC_MIGRATION_DB_USER:-}"
+      SYNC_MIGRATION_DB_PASSWORD: "${SYNC_MIGRATION_DB_PASSWORD:-}"
+    volumes:
+      - type: bind
+        source: ${SYNC_SECRETS_HOST_PATH:-./secrets}
+        target: /app/secrets
+        read_only: true
+      - type: bind
+        source: ${SYNC_DATA_HOST_PATH:-./data}
+        target: /app/data
+      - type: bind
+        source: ${SYNC_AUDIT_HOST_PATH:-./audit-export}
+        target: /app/audit-export
+      - type: bind
+        source: ${SYNC_BACKUP_HOST_PATH:-./backups}
+        target: /backups
+      - type: bind
+        source: ${SYNC_IMPORTS_HOST_PATH:-./imports}
+        target: /app/imports
+        read_only: true
+      - type: bind
+        source: ${WORDPRESS_SITE_HOST_PATH:-./wordpress-site}
+        target: /wordpress-site
+      - type: bind
+        source: ${WORDPRESS_THEMES_HOST_PATH:-./wordpress-themes}
+        target: /wordpress-themes
+      - type: bind
+        source: ${WORDPRESS_CONTENT_HOST_PATH:-./wordpress-content}
+        target: /wordpress-content
+    ports:
+      - "${SYNC_BIND_IP:-127.0.0.1}:${SYNC_PORT:-4177}:${SYNC_PORT:-4177}"
+    expose:
+      - "${SYNC_PORT:-4177}"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:$${SYNC_PORT:-4177}/healthz >/dev/null"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    security_opt:
+      - no-new-privileges:true
