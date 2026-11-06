@@ -14,7 +14,7 @@ The versioned image tag is intended to remain immutable.
 ## Release assets
 
 - `compose.yaml`
-- `.env.example`
+- `env.example` (downloaded as `.env.example`)
 - `INSTALL.md`
 - `RELEASE_NOTES.md`
 - `SHA256SUMS`

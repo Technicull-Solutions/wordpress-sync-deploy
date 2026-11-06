@@ -87,7 +87,6 @@ RELEASE_URL="https://github.com/Technicull-Solutions/wordpress-sync-deploy/relea
 
 for asset in \
   compose.yaml \
-  .env.example \
   INSTALL.md \
   RELEASE_NOTES.md \
   SHA256SUMS
@@ -97,6 +96,7 @@ do
     -o "${asset}"
 done
 
+curl -fL "${RELEASE_URL}/env.example" -o .env.example
 sha256sum --check SHA256SUMS
 ```
 
